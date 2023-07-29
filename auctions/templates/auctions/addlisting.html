@@ -1,0 +1,32 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+  <div class="container mt-5">
+    <h1>Add Listing</h1>
+
+    <form method="POST" enctype="multipart/form-data" class="mt-4">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="{{ form.title.id_for_label }}">Title:</label>
+        <input type="text" class="form-control" id="{{ form.title.id_for_label }}" name="{{ form.title.name }}" value="{{ form.title.value|default_if_none:'' }}">
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.description.id_for_label }}">Description:</label>
+        <textarea class="form-control" id="{{ form.description.id_for_label }}" name="{{ form.description.name }}">{{ form.description.value|default_if_none:'' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.file.id_for_label }}">Upload File:</label>
+        <input type="file" class="form-control-file" id="{{ form.image.id_for_label }}" name="{{ form.image.name }}">
+      </div>
+
+      <input type="submit" class="btn btn-primary" value="Submit">
+    </form>
+  </div>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+{% endblock %}
