@@ -5,13 +5,23 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from .forms import ListingForm
-from .models import User, Listing
+from .models import User, Listing, Bid, Comment
 
 
 def index(request):
     listings = Listing.objects.all()
+    bids = Bid.objects.all()
+
+    top_bids = []
+    for item in listings:
+        filtered = bids.filter(listing=item)
+        if filtered:
+            top_bids.append(max(filtered, key=lambda bid: bid.amount))
+        else:
+            top_bids.append(0)
+
     list_url = [reverse("listing", args=[x.title]) for x in listings]
-    list_w_urls = list(zip(listings, list_url))
+    list_w_urls = list(zip(listings, list_url, top_bids))
     return render(request, "auctions/index.html", context={'obs' : list_w_urls})
 
 
@@ -71,14 +81,13 @@ def listing(request, title):
 def addlisting(request):
     if request.method == 'POST':
         form = ListingForm(request.POST, request.FILES)
-        print(f"in addlisting,{form.is_valid()}")
-        print(form.errors)
         if form.is_valid():
-            print("inside")
             listing = form.save(commit=False)  # Get the unsaved instance
             listing.poster = request.user  # Assign the current user to poster
             listing.save()  # Now save it
+            form.save_m2m()
             return redirect('index')  # Optionally redirect the user after successful save
     else:
         form = ListingForm()
+
     return render(request, 'auctions/addlisting.html', {'form': form})

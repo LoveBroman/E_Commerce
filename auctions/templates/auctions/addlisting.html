@@ -19,9 +19,21 @@
       </div>
 
       <div class="form-group">
-        <label for="{{ form.file.id_for_label }}">Upload File:</label>
+        <label for="{{ form.image.id_for_label }}">Upload File:</label>
         <input type="file" class="form-control-file" id="{{ form.image.id_for_label }}" name="{{ form.image.name }}">
       </div>
+
+     <div class="form-group">
+
+         {{ form.categories }}
+            <!--<label for="categories">Categories</label>
+            <select multiple class="form-control" id="categories" name="categories">
+                {% for category in form.categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>-->
+
 
       <input type="submit" class="btn btn-primary" value="Submit">
     </form>
