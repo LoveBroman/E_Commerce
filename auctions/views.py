@@ -4,7 +4,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from .forms import ListingForm, BidForm
+from .forms import ListingForm, BidForm, CommentForm
 from .models import User, Listing, Bid, Comment
 from . import utils
 
@@ -75,12 +75,14 @@ def listing(request, id):
     listing = Listing.objects.get(id=id)
     bids = Bid.objects.filter(listing= listing)
     comments = Comment.objects.filter(listing=listing)
+
     maxbid, ambids = utils.get_highest_bid(listing), len(Bid.objects.filter(listing= listing))
     bidding_url = reverse('makebid', args=[id])
-
+    comment_url = reverse('makecomment', args=[id])
     return render(request, "auctions/listingspage.html",
                   {"listing": listing, "maxbids": maxbid,"ambids":ambids,
-                  "bidding_url" : bidding_url   ,"comments": comments, "message": False})
+                  "bidding_url" : bidding_url   ,"comments": comments, "message": False,
+                   "comment_url":comment_url})
 
 @login_required
 def addlisting(request):
@@ -120,7 +122,21 @@ def makebid(request, id):
         else:
             ambids = len(Bid.objects.all())
             bidding_url = reverse('makebid', args=[id])
+            comment_url = reverse('makecomment', args=[id])
             comments = Comment.objects.filter(listing=listing)
             return render(request, 'auctions/listingspage.html', context = {"listing": listing, "maxbids": maxbid,"ambids":ambids,
-                  "bidding_url" : bidding_url   ,"comments": comments, "message": True})
+                  "bidding_url" : bidding_url   ,"comments": comments,
+                "message": True, "comment_url" :comment_url})
         return redirect('listing', id)
+
+def make_comment(request, id):
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            bid = form.save(commit=False)
+            bid.poster = request.user
+            listing = Listing.objects.get(id=id)
+            bid.listing = listing
+            form.save()
+    return redirect('listing', id)
+

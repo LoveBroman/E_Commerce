@@ -44,6 +44,12 @@
                 {% for comment in comments %}
                     <p><strong>{{ comment.poster.username }}</strong>: {{ comment.saying }}</p>
                 {% endfor %}
+                <form method="Post" action={{ comment_url }}>
+                        {% csrf_token %}
+                        <input type="text" class="form-control" id="comment" name="saying" placeholder="comment" />
+                        <button class="btn btn-primary" type="submit">Submit Comment</button>
+                    </form>
+
             </div>
         </div>
     </div>
