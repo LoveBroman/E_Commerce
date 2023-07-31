@@ -4,23 +4,20 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from .forms import ListingForm
+from .forms import ListingForm, BidForm
 from .models import User, Listing, Bid, Comment
-
+from . import utils
 
 def index(request):
     listings = Listing.objects.all()
     bids = Bid.objects.all()
 
     top_bids = []
-    for item in listings:
-        filtered = bids.filter(listing=item)
-        if filtered:
-            top_bids.append(max(filtered, key=lambda bid: bid.amount))
-        else:
-            top_bids.append(0)
+    for listing in listings:
+        top_bids.append(utils.get_highest_bid(listing))
 
-    list_url = [reverse("listing", args=[x.title]) for x in listings]
+    list_url = [reverse("listing", args=[x.id]) for x in listings]
+    print(list_url)
     list_w_urls = list(zip(listings, list_url, top_bids))
     return render(request, "auctions/index.html", context={'obs' : list_w_urls})
 
@@ -74,8 +71,16 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
-def listing(request, title):
-    pass
+def listing(request, id):
+    listing = Listing.objects.get(id=id)
+    bids = Bid.objects.filter(listing= listing)
+    comments = Comment.objects.filter(listing=listing)
+    maxbid, ambids = utils.get_highest_bid(listing), len(Bid.objects.filter(listing= listing))
+    bidding_url = reverse('makebid', args=[id])
+
+    return render(request, "auctions/listingspage.html",
+                  {"listing": listing, "maxbids": maxbid,"ambids":ambids,
+                  "bidding_url" : bidding_url   ,"comments": comments})
 
 @login_required
 def addlisting(request):
@@ -91,3 +96,17 @@ def addlisting(request):
         form = ListingForm()
 
     return render(request, 'auctions/addlisting.html', {'form': form})
+
+def makebid(request, id):
+    if request.method == "POST":
+        print(request.POST)
+        form = BidForm(request.POST)
+        if form.is_valid():
+            bid = form.save(commit=False)
+            bid.poster =request.user
+            listing = Listing.objects.get(id=id)
+            bid.listing = listing
+            form.save()
+        else:
+            print(form.errors)
+        return redirect('listing', id)

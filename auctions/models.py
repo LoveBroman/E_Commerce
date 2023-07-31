@@ -23,7 +23,7 @@ class Listing(models.Model):
 
 class Bid(models.Model):
     amount = models.IntegerField()
-    listing = models.ForeignKey(Listing,null=True, on_delete=models.SET_NULL)
+    listing = models.ForeignKey(Listing, null=True, on_delete=models.SET_NULL)
     poster = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Comment(models.Model):

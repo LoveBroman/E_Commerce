@@ -1,0 +1,48 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<style>
+    .image-wrapper {
+        width: 100%;
+        max-height: 500px;
+        overflow: hidden;
+    }
+
+    .image-wrapper img {
+        width: 100%;
+        height: auto;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col">
+            <h1 class="mb-4">{{ listing.title }}</h1>
+            <div class="image-wrapper">
+                <img src="{{ listing.image.url }}" alt="{{ listing.title }}" class="img-fluid" />
+            </div>
+            <div class="d-flex justify-content-between align-items-center my-4">
+                <h3>Price: ${{ maxbids.amount }}</h3>
+                <div class="input-group w-50">
+                    <form method="Post" action={{ bidding_url }}>
+                        {% csrf_token %}
+                        {% csrf_token %}
+                        <input type="text" class="form-control" id="bid" name="amount" placeholder="Make bid" />
+                        <button class="btn btn-primary" type="submit">Make Bid</button>
+                    </form>
+                </div>
+            </div>
+            <div>
+                <h2>Description</h2>
+                <p>{{ listing.description }}</p>
+            </div>
+            <div>
+                <h2>Comments</h2>
+                {% for comment in comments %}
+                    <p><strong>{{ comment.poster.username }}</strong>: {{ comment.saying }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
