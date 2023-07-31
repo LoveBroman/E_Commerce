@@ -24,6 +24,9 @@
             <div class="d-flex justify-content-between align-items-center my-4">
                 <h3>Price: ${{ maxbids.amount }}</h3>
                 <div class="input-group w-50">
+                    {% if message %}
+                        <p style="color: red"> Invalid Form </p>
+                    {% endif %}
                     <form method="Post" action={{ bidding_url }}>
                         {% csrf_token %}
                         {% csrf_token %}

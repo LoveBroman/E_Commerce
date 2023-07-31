@@ -80,7 +80,7 @@ def listing(request, id):
 
     return render(request, "auctions/listingspage.html",
                   {"listing": listing, "maxbids": maxbid,"ambids":ambids,
-                  "bidding_url" : bidding_url   ,"comments": comments})
+                  "bidding_url" : bidding_url   ,"comments": comments, "message": False})
 
 @login_required
 def addlisting(request):
@@ -97,16 +97,30 @@ def addlisting(request):
 
     return render(request, 'auctions/addlisting.html', {'form': form})
 
+@login_required
 def makebid(request, id):
     if request.method == "POST":
+        listing = Listing.objects.get(id=id)
         print(request.POST)
+
+        maxbid = utils.get_highest_bid(listing)
+        amount = request.POST["amount"]
+        print("amount digit", amount.isdigit())
+        if amount.isdigit():
+            valid = int(amount) > int(maxbid.amount)
+        else:
+            valid = False
         form = BidForm(request.POST)
-        if form.is_valid():
+        if form.is_valid() and valid:
             bid = form.save(commit=False)
-            bid.poster =request.user
+            bid.poster = request.user
             listing = Listing.objects.get(id=id)
             bid.listing = listing
             form.save()
         else:
-            print(form.errors)
+            ambids = len(Bid.objects.all())
+            bidding_url = reverse('makebid', args=[id])
+            comments = Comment.objects.filter(listing=listing)
+            return render(request, 'auctions/listingspage.html', context = {"listing": listing, "maxbids": maxbid,"ambids":ambids,
+                  "bidding_url" : bidding_url   ,"comments": comments, "message": True})
         return redirect('listing', id)
